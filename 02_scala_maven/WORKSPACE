@@ -1,0 +1,56 @@
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+# rules_scala
+skylib_version = "1.0.3"
+
+http_archive(
+    name = "bazel_skylib",
+    sha256 = "1c531376ac7e5a180e0237938a2536de0c54d93f5c278634818e0efc952dd56c",
+    type = "tar.gz",
+    url = "https://mirror.bazel.build/github.com/bazelbuild/bazel-skylib/releases/download/{}/bazel-skylib-{}.tar.gz".format(skylib_version, skylib_version),
+)
+
+http_archive(
+    name = "io_bazel_rules_scala",
+    url = "https://github.com/bazelbuild/rules_scala/releases/download/20220201/rules_scala-20220201.zip",
+    type = "zip",
+    strip_prefix = "rules_scala-20220201",
+    sha256 = "77a3b9308a8780fff3f10cdbbe36d55164b85a48123033f5e970fdae262e8eb2",
+)
+
+
+load("@io_bazel_rules_scala//:scala_config.bzl", "scala_config")
+scala_config(scala_version = "2.13.8")
+
+load("@io_bazel_rules_scala//scala:scala.bzl", "scala_repositories")
+scala_repositories()
+
+load("@rules_proto//proto:repositories.bzl", "rules_proto_dependencies", "rules_proto_toolchains")
+rules_proto_dependencies()
+rules_proto_toolchains()
+
+load("@io_bazel_rules_scala//scala:toolchains.bzl", "scala_register_toolchains")
+
+register_toolchains(":transitive_deps_toolchain")
+
+
+# rules_jvm_external
+RULES_JVM_EXTERNAL_TAG = "2.5"
+RULES_JVM_EXTERNAL_SHA = "249e8129914be6d987ca57754516be35a14ea866c616041ff0cd32ea94d2f3a1"
+http_archive(
+    name = "rules_jvm_external",
+    sha256 = RULES_JVM_EXTERNAL_SHA,
+    strip_prefix = "rules_jvm_external-%s" % RULES_JVM_EXTERNAL_TAG,
+    url = "https://github.com/bazelbuild/rules_jvm_external/archive/%s.zip" % RULES_JVM_EXTERNAL_TAG,
+)
+
+load("@rules_jvm_external//:defs.bzl", "maven_install")
+maven_install(
+    artifacts = [
+        "org.scalameta:scalameta_2.13:4.5.13",
+        "com.lihaoyi:pprint_2.13:0.7.3",
+    ],
+    repositories = [
+        "https://repo1.maven.org/maven2",
+    ],
+)
